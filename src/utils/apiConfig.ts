@@ -81,7 +81,10 @@ export const apiConfig = {
     githubUserByAccount: '/api/users/by-github/',
     githubCompanyCommits: '/api/github/company-commits',
     githubCommitSummaries: '/api/github/commit-summaries',
-    githubLiveCommits: '/api/github/live-commits'
+    githubLiveCommits: '/api/github/live-commits',
+    
+    // Test routes
+    testEncoding: '/api/test/test'
   }
 };
 
