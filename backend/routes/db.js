@@ -76,6 +76,17 @@ export async function initDb() {
           // In production, ensure admin password is set correctly
           if (process.env.NODE_ENV === 'production') {
             await setupProductionPasswords(db);
+            
+            // Also fix Portuguese character encoding
+            console.log('🔧 Running automatic encoding fix for production...');
+            try {
+              await db.close(); // Close current connection
+              const { fixDatabaseEncoding } = await import('./fix-encoding.js');
+              await fixDatabaseEncoding();
+              console.log('✅ Automatic encoding fix completed');
+            } catch (fixError) {
+              console.error('❌ Automatic encoding fix failed:', fixError.message);
+            }
           }
           
           await db.close();

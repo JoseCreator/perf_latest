@@ -60,6 +60,8 @@ export default function CRUDAdmin() {
   const [error, setError] = useState<string | null>(null);
   const [submitLoading, setSubmitLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const [encodingFixLoading, setEncodingFixLoading] = useState(false);
+  const [encodingFixResult, setEncodingFixResult] = useState<string | null>(null);
 
   // Define form fields for each entity type
   const getFormFields = (): FormField[] => {
@@ -345,6 +347,27 @@ export default function CRUDAdmin() {
     setError(null);
   };
 
+  const handleFixEncoding = async () => {
+    setEncodingFixLoading(true);
+    setEncodingFixResult(null);
+    
+    try {
+      const response = await axios.post(createApiUrl(apiConfig.endpoints.fixEncoding));
+      if (response.data.success) {
+        setEncodingFixResult(`✅ Sucesso! ${response.data.recordsFixed} registros corrigidos.`);
+        // Refresh data to show fixed characters
+        fetchData();
+      } else {
+        setEncodingFixResult(`❌ Erro: ${response.data.message}`);
+      }
+    } catch (error) {
+      console.error('Encoding fix error:', error);
+      setEncodingFixResult('❌ Erro ao corrigir codificação dos caracteres.');
+    } finally {
+      setEncodingFixLoading(false);
+    }
+  };
+
   const entityData = getFilteredEntityData();
 
   return (
@@ -362,6 +385,32 @@ export default function CRUDAdmin() {
             {tab.charAt(0).toUpperCase() + tab.slice(1)}
           </button>
         ))}
+      </div>
+
+      {/* Encoding Fix Section - Admin Tool */}
+      <div className="bg-yellow-50 border border-yellow-200 rounded p-4 mb-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-semibold text-yellow-800">Ferramenta de Administração</h3>
+            <p className="text-sm text-yellow-700">Corrigir caracteres portugueses (ç, ã, õ, etc.) na base de dados</p>
+          </div>
+          <button
+            onClick={handleFixEncoding}
+            disabled={encodingFixLoading}
+            className={`px-4 py-2 rounded font-medium transition-colors ${
+              encodingFixLoading 
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                : 'bg-yellow-500 hover:bg-yellow-600 text-white'
+            }`}
+          >
+            {encodingFixLoading ? 'A Corrigir...' : 'Corrigir Codificação'}
+          </button>
+        </div>
+        {encodingFixResult && (
+          <div className="mt-3 p-2 bg-white rounded border">
+            <p className="text-sm">{encodingFixResult}</p>
+          </div>
+        )}
       </div>
 
       {error && (

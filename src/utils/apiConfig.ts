@@ -84,7 +84,8 @@ export const apiConfig = {
     githubLiveCommits: '/api/github/live-commits',
     
     // Test routes
-    testEncoding: '/api/test/test'
+    testEncoding: '/api/test/test',
+    fixEncoding: '/api/test/fix-encoding'
   }
 };
 
