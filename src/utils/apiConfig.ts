@@ -1,3 +1,10 @@
+import axios from 'axios';
+
+// Set default axios configuration for UTF-8 support
+axios.defaults.headers.common['Accept'] = 'application/json; charset=utf-8';
+axios.defaults.headers.common['Content-Type'] = 'application/json; charset=utf-8';
+axios.defaults.headers.common['Accept-Charset'] = 'utf-8';
+
 // Production backend URL - hardcoded to ensure it works
 // Force correct URL and prevent underscore variations
 let envUrl = import.meta.env.VITE_API_URL;
@@ -117,4 +124,51 @@ export const absencesApi = {
 
 export const createApiUrl = (endpoint: string): string => {
   return `${API_BASE_URL}${endpoint}`;
+};
+
+// Default headers to ensure proper UTF-8 encoding
+export const defaultHeaders = {
+  'Content-Type': 'application/json; charset=utf-8',
+  'Accept': 'application/json; charset=utf-8',
+  'Accept-Charset': 'utf-8'
+};
+
+// Axios wrapper functions with proper UTF-8 headers
+export const apiRequest = {
+  get: (url: string, config?: any) => {
+    return axios.get(url, {
+      ...config,
+      headers: {
+        ...defaultHeaders,
+        ...(config?.headers || {})
+      }
+    });
+  },
+  post: (url: string, data?: any, config?: any) => {
+    return axios.post(url, data, {
+      ...config,
+      headers: {
+        ...defaultHeaders,
+        ...(config?.headers || {})
+      }
+    });
+  },
+  put: (url: string, data?: any, config?: any) => {
+    return axios.put(url, data, {
+      ...config,
+      headers: {
+        ...defaultHeaders,
+        ...(config?.headers || {})
+      }
+    });
+  },
+  delete: (url: string, config?: any) => {
+    return axios.delete(url, {
+      ...config,
+      headers: {
+        ...defaultHeaders,
+        ...(config?.headers || {})
+      }
+    });
+  }
 };

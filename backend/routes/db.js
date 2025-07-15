@@ -13,10 +13,15 @@ const dbPath = process.env.NODE_ENV === 'production'
   : path.resolve(__dirname, '../timetracker.db');
 
 export async function getDb() {
-  return open({
+  const db = await open({
     filename: dbPath,
     driver: sqlite3.Database
   });
+  
+  // Ensure UTF-8 encoding
+  await db.exec('PRAGMA encoding = "UTF-8"');
+  
+  return db;
 }
 
 export async function initDb() {

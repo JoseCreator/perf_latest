@@ -52,7 +52,29 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.use(express.json()); // to parse JSON body
+
+// Set charset for all responses to UTF-8
+app.use((req, res, next) => {
+  res.charset = 'utf-8';
+  res.set({
+    'Content-Type': 'application/json; charset=utf-8',
+    'Accept-Charset': 'utf-8'
+  });
+  next();
+});
+
+app.use(express.json({ limit: '10mb' })); // to parse JSON body with UTF-8 support
+
+// Override JSON response method to ensure UTF-8 encoding
+app.use((req, res, next) => {
+  const originalJson = res.json;
+  res.json = function(obj) {
+    // Ensure UTF-8 encoding for all JSON responses
+    res.set('Content-Type', 'application/json; charset=utf-8');
+    return originalJson.call(this, obj);
+  };
+  next();
+});
 
 // Health check endpoint
 app.get('/health', (req, res) => {
