@@ -202,7 +202,13 @@ export default function RegistoHoras() {
     setClientesLoading(true);
     axios.get(createApiUrl(apiConfig.endpoints.clientsByUser), { params: { user_id: userId } })
       .then((res) => {
-        setClientes(res.data);
+        // Transform client data to ensure proper label format
+        const transformedClients = res.data.map((client: any) => ({
+          ...client,
+          label: client.name || client.nome || client.label || `Client ${client.id}`,
+          value: client.id
+        }));
+        setClientes(transformedClients);
         setClientesLoading(false);
       })
       .catch(() => {
@@ -433,6 +439,14 @@ export default function RegistoHoras() {
                         loading={clientesLoading}
                         value={selectedCliente}
                         onChange={(_, v) => setSelectedCliente(v)}
+                        getOptionLabel={(option) => {
+                          if (typeof option === 'string') return option;
+                          return option?.label || option?.name || option?.nome || `Client ${option?.id}` || '';
+                        }}
+                        isOptionEqualToValue={(option, value) => {
+                          if (!option || !value) return false;
+                          return option.id === value.id || option.label === value.label;
+                        }}
                         sx={{ 
                           '& .MuiAutocomplete-root': {
                             borderRadius: '12px',
@@ -450,6 +464,14 @@ export default function RegistoHoras() {
                         loading={gruposLoading}
                         value={selectedGrupo}
                         onChange={(_, v) => setSelectedGrupo(v)}
+                        getOptionLabel={(option) => {
+                          if (typeof option === 'string') return option;
+                          return option?.label || option?.name || option?.nome || `Project ${option?.id}` || '';
+                        }}
+                        isOptionEqualToValue={(option, value) => {
+                          if (!option || !value) return false;
+                          return option.id === value.id || option.label === value.label;
+                        }}
                         sx={{ 
                           '& .MuiAutocomplete-root': {
                             borderRadius: '12px',
@@ -482,6 +504,14 @@ export default function RegistoHoras() {
                         loading={categoriasLoading}
                         value={selectedCategoria}
                         onChange={(_, v) => setSelectedCategoria(v)}
+                        getOptionLabel={(option) => {
+                          if (typeof option === 'string') return option;
+                          return option?.label || option?.name || option?.nome || `Category ${option?.id}` || '';
+                        }}
+                        isOptionEqualToValue={(option, value) => {
+                          if (!option || !value) return false;
+                          return option.id === value.id || option.label === value.label;
+                        }}
                         sx={{ 
                           '& .MuiAutocomplete-root': {
                             borderRadius: '12px',
@@ -498,6 +528,14 @@ export default function RegistoHoras() {
                         options={tipo}
                         value={selectedTipo}
                         onChange={(_, v) => setSelectedTipo(v)}
+                        getOptionLabel={(option) => {
+                          if (typeof option === 'string') return option;
+                          return option?.label || `Type ${option?.id}` || '';
+                        }}
+                        isOptionEqualToValue={(option, value) => {
+                          if (!option || !value) return false;
+                          return option.id === value.id || option.label === value.label;
+                        }}
                         sx={{ 
                           '& .MuiAutocomplete-root': {
                             borderRadius: '12px',

@@ -165,6 +165,14 @@ const extrasPercent = (horasNormais > 0) ? Math.round((horasExtra / horasNormais
               options={projectOptions}
               value={selectedProject}
               onChange={(_, v) => setSelectedProject(v)}
+              getOptionLabel={(option) => {
+                if (typeof option === 'string') return option;
+                return option?.label || `Project ${option?.id}` || '';
+              }}
+              isOptionEqualToValue={(option, value) => {
+                if (!option || !value) return false;
+                return option.id === value.id || option.label === value.label;
+              }}
               sx={{ width: { xs: 180, sm: 200, md: 220 } }}
             />
           </div>
