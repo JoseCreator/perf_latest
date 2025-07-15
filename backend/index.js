@@ -21,6 +21,7 @@ import emailRoutes from './routes/email.js';
 import githubRoutes from './routes/github.js';
 import testEncodingRoutes from './routes/test-encoding.js';
 import diagnoseEncodingRoutes from './routes/diagnose-encoding.js';
+import frontendTestRoutes from './routes/frontend-test.js';
 import { initDb } from './routes/db.js';
 
 
@@ -116,6 +117,7 @@ app.use('/api/email', emailRoutes);
 app.use('/api/github', githubRoutes);
 app.use('/api/test', testEncodingRoutes);
 app.use('/api/diagnose', diagnoseEncodingRoutes);
+app.use('/api/frontend-test', frontendTestRoutes);
 
 async function forceAdminPasswordReset() {
   if (process.env.NODE_ENV === 'production') {

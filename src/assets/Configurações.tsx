@@ -68,6 +68,8 @@ export default function CRUDAdmin() {
   const [diagnosticResult, setDiagnosticResult] = useState<any>(null);
   const [detailedFixLoading, setDetailedFixLoading] = useState(false);
   const [detailedFixResult, setDetailedFixResult] = useState<any>(null);
+  const [frontendTestLoading, setFrontendTestLoading] = useState(false);
+  const [frontendTestResult, setFrontendTestResult] = useState<any>(null);
 
   // Define form fields for each entity type
   const getFormFields = (): FormField[] => {
@@ -433,6 +435,61 @@ export default function CRUDAdmin() {
     }
   };
 
+  const handleFrontendTest = async () => {
+    setFrontendTestLoading(true);
+    setFrontendTestResult(null);
+    
+    try {
+      console.log('🧪 Frontend encoding test starting...');
+      
+      // Test 1: Get fresh test data from backend
+      const testResponse = await axios.get(createApiUrl(apiConfig.endpoints.frontendTest));
+      console.log('🔍 Backend response headers:', testResponse.headers);
+      console.log('🔍 Backend response data:', testResponse.data);
+      
+      // Test 2: Get corruption simulation
+      const corruptionResponse = await axios.get(createApiUrl(apiConfig.endpoints.corruptionSimulation));
+      console.log('🔍 Corruption simulation:', corruptionResponse.data);
+      
+      // Test 3: Compare with actual user data
+      const userResponse = await axios.get(createApiUrl(apiConfig.endpoints.adminUsers));
+      console.log('🔍 Actual user data sample:', userResponse.data.slice(0, 3));
+      
+      // Analyze the differences
+      const analysis = {
+        testDataReceived: testResponse.data,
+        corruptionSimulation: corruptionResponse.data,
+        actualUserSample: userResponse.data.slice(0, 3),
+        browserInfo: {
+          userAgent: navigator.userAgent,
+          language: navigator.language,
+          charset: document.characterSet,
+          contentType: document.contentType
+        },
+        axiosConfig: {
+          acceptHeader: axios.defaults.headers.common['Accept'],
+          contentTypeHeader: axios.defaults.headers.common['Content-Type'],
+          acceptCharsetHeader: axios.defaults.headers.common['Accept-Charset']
+        }
+      };
+      
+      setFrontendTestResult({
+        success: true,
+        analysis,
+        timestamp: new Date().toISOString()
+      });
+      
+    } catch (error) {
+      console.error('Frontend test error:', error);
+      setFrontendTestResult({ 
+        error: 'Erro ao testar codificação no frontend.',
+        details: error instanceof Error ? error.message : String(error)
+      });
+    } finally {
+      setFrontendTestLoading(false);
+    }
+  };
+
   const entityData = getFilteredEntityData();
 
   return (
@@ -503,6 +560,17 @@ export default function CRUDAdmin() {
               }`}
             >
               {detailedFixLoading ? 'A Corrigir...' : 'Correção Avançada'}
+            </button>
+            <button
+              onClick={handleFrontendTest}
+              disabled={frontendTestLoading}
+              className={`px-4 py-2 rounded font-medium transition-colors ${
+                frontendTestLoading 
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                  : 'bg-blue-500 hover:bg-blue-600 text-white'
+              }`}
+            >
+              {frontendTestLoading ? 'A Testar...' : 'Teste Frontend'}
             </button>
           </div>
         </div>
@@ -613,6 +681,63 @@ export default function CRUDAdmin() {
                     </div>
                   </div>
                 )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Frontend Test Result */}
+        {frontendTestResult && (
+          <div className="mt-3 p-3 bg-white rounded border">
+            <h4 className="font-semibold mb-2">Resultado do Teste Frontend:</h4>
+            {frontendTestResult.error ? (
+              <div>
+                <p className="text-red-600">❌ {frontendTestResult.error}</p>
+                {frontendTestResult.details && (
+                  <p className="text-sm text-gray-600 mt-1">{frontendTestResult.details}</p>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div>
+                  <h5 className="font-medium text-sm mb-1">Dados de Teste do Backend:</h5>
+                  <div className="text-xs bg-gray-50 p-2 rounded">
+                    <div><strong>Nomes portugueses:</strong></div>
+                    {frontendTestResult.analysis?.testDataReceived?.portugueseNames?.map((name: string, i: number) => (
+                      <div key={i} className="ml-2">• {name}</div>
+                    ))}
+                  </div>
+                </div>
+                
+                <div>
+                  <h5 className="font-medium text-sm mb-1">Dados Reais dos Utilizadores:</h5>
+                  <div className="text-xs bg-gray-50 p-2 rounded max-h-32 overflow-y-auto">
+                    {frontendTestResult.analysis?.actualUserSample?.map((user: any, i: number) => (
+                      <div key={i} className="mb-1">
+                        <strong>ID {user.user_id}:</strong> {user.First_Name} {user.Last_Name}
+                        <div className="ml-2 text-gray-600">Email: {user.email}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <h5 className="font-medium text-sm mb-1">Informações do Browser:</h5>
+                  <div className="text-xs bg-gray-50 p-2 rounded">
+                    <div><strong>Charset:</strong> {frontendTestResult.analysis?.browserInfo?.charset}</div>
+                    <div><strong>Idioma:</strong> {frontendTestResult.analysis?.browserInfo?.language}</div>
+                    <div><strong>Content-Type:</strong> {frontendTestResult.analysis?.browserInfo?.contentType}</div>
+                  </div>
+                </div>
+
+                <div>
+                  <h5 className="font-medium text-sm mb-1">Configuração Axios:</h5>
+                  <div className="text-xs bg-gray-50 p-2 rounded">
+                    <div><strong>Accept:</strong> {frontendTestResult.analysis?.axiosConfig?.acceptHeader}</div>
+                    <div><strong>Content-Type:</strong> {frontendTestResult.analysis?.axiosConfig?.contentTypeHeader}</div>
+                    <div><strong>Accept-Charset:</strong> {frontendTestResult.analysis?.axiosConfig?.acceptCharsetHeader}</div>
+                  </div>
+                </div>
               </div>
             )}
           </div>

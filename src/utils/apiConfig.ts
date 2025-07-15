@@ -88,7 +88,9 @@ export const apiConfig = {
     fixEncoding: '/api/test/fix-encoding',
     checkCorruption: '/api/test/check-corruption',
     diagnoseCorruption: '/api/diagnose/diagnose-corruption',
-    fixEncodingDetailed: '/api/diagnose/fix-encoding-detailed'
+    fixEncodingDetailed: '/api/diagnose/fix-encoding-detailed',
+    frontendTest: '/api/frontend-test',
+    corruptionSimulation: '/api/frontend-test/corruption-simulation'
   }
 };
 
