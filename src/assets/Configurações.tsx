@@ -62,6 +62,8 @@ export default function CRUDAdmin() {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [encodingFixLoading, setEncodingFixLoading] = useState(false);
   const [encodingFixResult, setEncodingFixResult] = useState<string | null>(null);
+  const [corruptionCheckLoading, setCorruptionCheckLoading] = useState(false);
+  const [corruptionReport, setCorruptionReport] = useState<any>(null);
 
   // Define form fields for each entity type
   const getFormFields = (): FormField[] => {
@@ -368,6 +370,25 @@ export default function CRUDAdmin() {
     }
   };
 
+  const handleCheckCorruption = async () => {
+    setCorruptionCheckLoading(true);
+    setCorruptionReport(null);
+    
+    try {
+      const response = await axios.get(createApiUrl(apiConfig.endpoints.checkCorruption));
+      if (response.data.success) {
+        setCorruptionReport(response.data.report);
+      } else {
+        setCorruptionReport({ error: response.data.message });
+      }
+    } catch (error) {
+      console.error('Corruption check error:', error);
+      setCorruptionReport({ error: 'Erro ao verificar corrupção de dados.' });
+    } finally {
+      setCorruptionCheckLoading(false);
+    }
+  };
+
   const entityData = getFilteredEntityData();
 
   return (
@@ -389,23 +410,68 @@ export default function CRUDAdmin() {
 
       {/* Encoding Fix Section - Admin Tool */}
       <div className="bg-yellow-50 border border-yellow-200 rounded p-4 mb-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-4">
           <div>
             <h3 className="text-lg font-semibold text-yellow-800">Ferramenta de Administração</h3>
-            <p className="text-sm text-yellow-700">Corrigir caracteres portugueses (ç, ã, õ, etc.) na base de dados</p>
+            <p className="text-sm text-yellow-700">Verificar e corrigir caracteres portugueses (ç, ã, õ, etc.) na base de dados</p>
           </div>
-          <button
-            onClick={handleFixEncoding}
-            disabled={encodingFixLoading}
-            className={`px-4 py-2 rounded font-medium transition-colors ${
-              encodingFixLoading 
-                ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
-                : 'bg-yellow-500 hover:bg-yellow-600 text-white'
-            }`}
-          >
-            {encodingFixLoading ? 'A Corrigir...' : 'Corrigir Codificação'}
-          </button>
+          <div className="flex space-x-2">
+            <button
+              onClick={handleCheckCorruption}
+              disabled={corruptionCheckLoading}
+              className={`px-4 py-2 rounded font-medium transition-colors ${
+                corruptionCheckLoading 
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                  : 'bg-blue-500 hover:bg-blue-600 text-white'
+              }`}
+            >
+              {corruptionCheckLoading ? 'A Verificar...' : 'Verificar Dados'}
+            </button>
+            <button
+              onClick={handleFixEncoding}
+              disabled={encodingFixLoading}
+              className={`px-4 py-2 rounded font-medium transition-colors ${
+                encodingFixLoading 
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                  : 'bg-yellow-500 hover:bg-yellow-600 text-white'
+              }`}
+            >
+              {encodingFixLoading ? 'A Corrigir...' : 'Corrigir Codificação'}
+            </button>
+          </div>
         </div>
+        
+        {/* Corruption Report */}
+        {corruptionReport && (
+          <div className="mt-3 p-3 bg-white rounded border">
+            <h4 className="font-semibold mb-2">Relatório de Verificação:</h4>
+            {corruptionReport.error ? (
+              <p className="text-red-600">❌ {corruptionReport.error}</p>
+            ) : (
+              <div className="space-y-2">
+                <p className="text-sm">
+                  <strong>Total de registros corrompidos:</strong> {corruptionReport.totalCorrupted}
+                </p>
+                {corruptionReport.samplesFound?.length > 0 && (
+                  <div>
+                    <p className="text-sm font-medium mb-1">Exemplos encontrados:</p>
+                    <div className="max-h-32 overflow-y-auto">
+                      {corruptionReport.samplesFound.slice(0, 5).map((sample: any, index: number) => (
+                        <div key={index} className="text-xs bg-gray-50 p-2 rounded mb-1">
+                          <span className="text-red-600">"{sample.original}"</span> → 
+                          <span className="text-green-600"> "{sample.fixed}"</span>
+                          <span className="text-gray-500"> ({sample.table}.{sample.column})</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+        
+        {/* Fix Result */}
         {encodingFixResult && (
           <div className="mt-3 p-2 bg-white rounded border">
             <p className="text-sm">{encodingFixResult}</p>

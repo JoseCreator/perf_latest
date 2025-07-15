@@ -81,11 +81,22 @@ export async function initDb() {
             console.log('🔧 Running automatic encoding fix for production...');
             try {
               await db.close(); // Close current connection
-              const { fixDatabaseEncoding } = await import('./fix-encoding.js');
-              await fixDatabaseEncoding();
-              console.log('✅ Automatic encoding fix completed');
+              const { fixDatabaseEncoding, checkDatabaseCorruption } = await import('./fix-encoding.js');
+              
+              // First check if corruption exists
+              const corruptionReport = await checkDatabaseCorruption();
+              console.log('📊 Corruption check result:', corruptionReport);
+              
+              if (corruptionReport.totalCorrupted > 0) {
+                console.log(`🔧 Found ${corruptionReport.totalCorrupted} corrupted records, running fix...`);
+                await fixDatabaseEncoding();
+                console.log('✅ Automatic encoding fix completed');
+              } else {
+                console.log('✅ No corruption detected, skipping encoding fix');
+              }
             } catch (fixError) {
               console.error('❌ Automatic encoding fix failed:', fixError.message);
+              console.error('Full error:', fixError);
             }
           }
           

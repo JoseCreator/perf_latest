@@ -1,5 +1,5 @@
 import express from 'express';
-import { fixDatabaseEncoding } from './fix-encoding.js';
+import { fixDatabaseEncoding, checkDatabaseCorruption } from './fix-encoding.js';
 
 const router = express.Router();
 
@@ -16,6 +16,29 @@ router.get('/test', (req, res) => {
   };
   
   res.json(testData);
+});
+
+// Endpoint to check for corrupted data
+router.get('/check-corruption', async (req, res) => {
+  try {
+    console.log('🔍 Corruption check requested');
+    const report = await checkDatabaseCorruption();
+    
+    res.json({
+      success: true,
+      message: 'Database corruption check completed',
+      report: report,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('❌ Corruption check failed:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to check corruption',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
 });
 
 // Endpoint to fix Portuguese character encoding in the database

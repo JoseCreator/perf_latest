@@ -2,6 +2,7 @@ import { getDb } from './db.js';
 
 // Map of corrupted characters to correct Portuguese characters
 const CHARACTER_MAP = {
+  // Complete names that are corrupted
   'Gon??alves': 'Gonçalves',
   'Ant??nio': 'António',
   'Jos??': 'José',
@@ -11,11 +12,13 @@ const CHARACTER_MAP = {
   'Sebasti??o': 'Sebastião',
   'Concei????o': 'Conceição',
   'Encarna????o': 'Encarnação',
-  'Atrac????o': 'Atracção',
+  
+  // Common Portuguese words
+  'Atrac????o': 'Atração',
   'Cria????o': 'Criação',
   'Fun????o': 'Função',
-  'Ac????o': 'Acção',
-  'Ac????es': 'Acções',
+  'Ac????o': 'Ação',
+  'Ac????es': 'Ações',
   'Informa????o': 'Informação',
   'Configura????es': 'Configurações',
   'Descri????o': 'Descrição',
@@ -26,7 +29,7 @@ const CHARACTER_MAP = {
   'Administra????o': 'Administração',
   'Utiliza????o': 'Utilização',
   'Organiza????o': 'Organização',
-  'Atualiza????o': 'Actualização',
+  'Atualiza????o': 'Atualização',
   'Verifica????o': 'Verificação',
   'Publica????o': 'Publicação',
   'Aplica????o': 'Aplicação',
@@ -39,12 +42,13 @@ const CHARACTER_MAP = {
   'Navega????o': 'Navegação',
   'Instala????o': 'Instalação',
   'Configura????o': 'Configuração',
-  // Common pattern replacements
+  
+  // Individual character replacements (more patterns)
   '??': 'ç',
   '??': 'ã',
   '??': 'õ',
   '??': 'á',
-  '??': 'é',
+  '??': 'é', 
   '??': 'í',
   '??': 'ó',
   '??': 'ú',
@@ -56,10 +60,60 @@ const CHARACTER_MAP = {
   '??': 'ì',
   '??': 'ò',
   '??': 'ù',
+  '??': 'ü',
+  '??': 'Ç',
+  '??': 'Ã',
+  '??': 'Õ',
+  '??': 'Á',
+  '??': 'É',
+  '??': 'Í',
+  '??': 'Ó',
+  '??': 'Ú',
+  '??': 'Â',
+  '??': 'Ê',
+  '??': 'Ô',
+  '??': 'À',
+  '??': 'È',
+  '??': 'Ì',
+  '??': 'Ò',
+  '??': 'Ù',
+  
+  // Common patterns
   '????': 'ção',
-  '????': 'ções',
+  '????es': 'ções',
   '???o': 'ção',
-  '???es': 'ções'
+  '???es': 'ções',
+  '??es': 'ções',
+  '??o': 'ção',
+  
+  // Additional patterns found in databases
+  'â€™': "'",
+  'â€œ': '"',
+  'â€': '"',
+  'â€¦': '...',
+  'â€"': '–',
+  'â€"': '—',
+  
+  // UTF-8 to Latin-1 double encoding issues
+  'Ã§': 'ç',
+  'Ã£': 'ã',
+  'Ã©': 'é',
+  'Ã¡': 'á',
+  'Ã­': 'í',
+  'Ã³': 'ó',
+  'Ãº': 'ú',
+  'Ã': 'à',
+  'Ã¨': 'è',
+  'Ã¬': 'ì',
+  'Ã²': 'ò',
+  'Ã¹': 'ù',
+  'Ã¢': 'â',
+  'Ãª': 'ê',
+  'Ã´': 'ô',
+  'Ã¼': 'ü',
+  'Ã§Ã£o': 'ção',
+  'Ã§Ã£': 'ção',
+  'Ã§Ã': 'ção'
 };
 
 /**
@@ -76,6 +130,95 @@ function fixPortugueseChars(text) {
   }
   
   return fixed;
+}
+
+/**
+ * Detect if text contains corrupted Portuguese characters
+ */
+function hasCorruptedChars(text) {
+  if (!text || typeof text !== 'string') return false;
+  
+  // Check for common corruption patterns
+  const corruptionPatterns = [
+    /\?\?/,           // Double question marks
+    /\?\?\?\?/,       // Quadruple question marks  
+    /Ã[§£©¡­³º\u00A0-\u00FF]/,  // UTF-8 double encoding
+    /â€[™œ"¦"]/      // Smart quotes corruption
+  ];
+  
+  return corruptionPatterns.some(pattern => pattern.test(text));
+}
+
+/**
+ * Check database for corrupted data
+ */
+export async function checkDatabaseCorruption() {
+  console.log('🔍 Checking database for Portuguese character corruption...');
+  
+  const db = await getDb();
+  const corruptionReport = {
+    tables: {},
+    totalCorrupted: 0,
+    samplesFound: []
+  };
+  
+  try {
+    const tablesToCheck = [
+      { name: 'utilizadores', columns: ['First_Name', 'Last_Name', 'email'] },
+      { name: 'clients', columns: ['name', 'description'] },
+      { name: 'projects', columns: ['project_name', 'project_description'] },
+      { name: 'timesheet', columns: ['activity_description', 'notes'] }
+    ];
+    
+    for (const table of tablesToCheck) {
+      const tableExists = await db.get(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name = ?", 
+        [table.name]
+      );
+      
+      if (!tableExists) {
+        corruptionReport.tables[table.name] = { status: 'not_found', corrupted: 0 };
+        continue;
+      }
+      
+      const rows = await db.all(`SELECT * FROM ${table.name} LIMIT 100`);
+      let corrupted = 0;
+      
+      for (const row of rows) {
+        for (const column of table.columns) {
+          const value = row[column];
+          if (hasCorruptedChars(value)) {
+            corrupted++;
+            corruptionReport.samplesFound.push({
+              table: table.name,
+              column: column,
+              original: value,
+              fixed: fixPortugueseChars(value)
+            });
+            if (corruptionReport.samplesFound.length >= 10) break; // Limit samples
+          }
+        }
+        if (corruptionReport.samplesFound.length >= 10) break;
+      }
+      
+      corruptionReport.tables[table.name] = { 
+        status: 'checked', 
+        totalRows: rows.length,
+        corrupted: corrupted 
+      };
+      corruptionReport.totalCorrupted += corrupted;
+    }
+    
+    console.log(`🔍 Corruption check complete. Found ${corruptionReport.totalCorrupted} corrupted records`);
+    
+  } catch (error) {
+    console.error('❌ Error checking database corruption:', error.message);
+    corruptionReport.error = error.message;
+  } finally {
+    await db.close();
+  }
+  
+  return corruptionReport;
 }
 
 /**
