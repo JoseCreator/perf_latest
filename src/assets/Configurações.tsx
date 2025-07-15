@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { apiConfig, createApiUrl } from '../utils/apiConfig';
 
@@ -158,54 +158,54 @@ export default function CRUDAdmin() {
     });
   };
 
+  // Fetch data function - wrapped with useCallback to prevent infinite loops
+  const fetchData = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      let endpoint = '';
+      
+      switch (activeTab) {
+        case 'clientes':
+          endpoint = apiConfig.endpoints.adminClients;
+          const clientsResponse = await axios.get<Client[]>(createApiUrl(endpoint));
+          console.log('Fetched clients:', clientsResponse.data);
+          setClientes(clientsResponse.data);
+          break;
+        
+        case 'projetos':
+          endpoint = apiConfig.endpoints.adminProjects;
+          const projectsResponse = await axios.get<Project[]>(createApiUrl(endpoint));
+          console.log('Fetched projects:', projectsResponse.data);
+          setProjetos(projectsResponse.data);
+          break;
+        
+        case 'utilizadores':
+          endpoint = apiConfig.endpoints.adminUsers;
+          const usersResponse = await axios.get<User[]>(createApiUrl(endpoint));
+          console.log('Fetched users:', usersResponse.data);
+          setUtilizadores(usersResponse.data);
+          break;
+      }
+    } catch (err) {
+      console.error(`Error fetching ${activeTab}:`, err);
+      setError(`Erro ao carregar ${activeTab}`);
+      switch (activeTab) {
+        case 'clientes': setClientes([]); break;
+        case 'projetos': setProjetos([]); break;
+        case 'utilizadores': setUtilizadores([]); break;
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [activeTab]); // Only depend on activeTab
+
   // Fetch data based on active tab
   useEffect(() => {
     // Clear search when switching tabs
     setSearchTerm('');
-    
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        let endpoint = '';
-        
-        switch (activeTab) {
-          case 'clientes':
-            endpoint = apiConfig.endpoints.adminClients;
-            const clientsResponse = await axios.get<Client[]>(createApiUrl(endpoint));
-            console.log('Fetched clients:', clientsResponse.data);
-            setClientes(clientsResponse.data);
-            break;
-          
-          case 'projetos':
-            endpoint = apiConfig.endpoints.adminProjects;
-            const projectsResponse = await axios.get<Project[]>(createApiUrl(endpoint));
-            console.log('Fetched projects:', projectsResponse.data);
-            setProjetos(projectsResponse.data);
-            break;
-          
-          case 'utilizadores':
-            endpoint = apiConfig.endpoints.adminUsers;
-            const usersResponse = await axios.get<User[]>(createApiUrl(endpoint));
-            console.log('Fetched users:', usersResponse.data);
-            setUtilizadores(usersResponse.data);
-            break;
-        }
-      } catch (err) {
-        console.error(`Error fetching ${activeTab}:`, err);
-        setError(`Erro ao carregar ${activeTab}`);
-        switch (activeTab) {
-          case 'clientes': setClientes([]); break;
-          case 'projetos': setProjetos([]); break;
-          case 'utilizadores': setUtilizadores([]); break;
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchData();
-  }, [activeTab]);
+  }, [activeTab, fetchData]); // Add fetchData to dependencies
 
   const handleAdd = async () => {
     try {
