@@ -88,10 +88,10 @@ export async function initDb() {
               // First check if corruption exists
               const corruptionReport = await checkDatabaseCorruption();
               
-              if (corruptionReport.totalCorrupted > 0) {
-                console.log(`🔧 Found ${corruptionReport.totalCorrupted} corrupted records, running fix...`);
-                await fixDatabaseEncoding();
-                console.log('✅ Automatic encoding fix completed');
+              if (corruptionReport.corrupted && corruptionReport.details.length > 0) {
+                console.log(`🔧 Found ${corruptionReport.details.length} corrupted records, running fix...`);
+                const fixResult = await fixDatabaseEncoding();
+                console.log(`✅ Automatic encoding fix completed. Fixed ${fixResult.fixed} records`);
               } else {
                 console.log('✅ No corruption detected, skipping encoding fix');
               }
