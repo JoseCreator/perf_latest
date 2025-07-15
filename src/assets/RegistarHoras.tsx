@@ -201,13 +201,14 @@ export default function RegistoHoras() {
     // ===== FETCH CLIENTS =====
     setClientesLoading(true);
     axios.get(createApiUrl(apiConfig.endpoints.clientsByUser), { params: { user_id: userId } })
-      .then((res) => {
+      .then((res) => {        
         // Transform client data to ensure proper label format
         const transformedClients = res.data.map((client: any) => ({
           ...client,
           label: client.name || client.nome || client.label || `Client ${client.id}`,
           value: client.id
         }));
+        
         setClientes(transformedClients);
         setClientesLoading(false);
       })
@@ -239,12 +240,14 @@ export default function RegistoHoras() {
     setCategoriasLoading(true);
     fetch(createApiUrl(apiConfig.endpoints.categories))
       .then((res) => res.json())
-      .then((data: any[]) => {
+      .then((data: any[]) => {        
         // Transform categories to ensure consistent label format
-        setCategorias(data.map((cat: any) => ({ 
+        const transformedCategories = data.map((cat: any) => ({ 
           label: cat.task_category || cat.nome || cat.label || cat.name || cat.id, 
           ...cat 
-        })));
+        }));
+        
+        setCategorias(transformedCategories);
         setCategoriasLoading(false);
       })
       .catch(() => {

@@ -18,6 +18,9 @@ router.get('/', async (req, res) => {
 
 // GET /api/clients/by-user - returns clients filtered by user's groups
 router.get('/by-user', async (req, res) => {
+  // Set explicit UTF-8 headers for Portuguese character support
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  
   const { user_id } = req.query;
   if (!user_id) return res.status(400).json({ error: 'Missing user_id' });
   
@@ -90,6 +93,9 @@ router.get('/groups', async (req, res) => {
 
 // GET /api/clients/categories - returns all task categories
 router.get('/categories', async (req, res) => {
+  // Set explicit UTF-8 headers for Portuguese character support
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  
   try {
     const db = await getDb();
     const categories = await db.all('SELECT * FROM task_categories');
@@ -234,6 +240,9 @@ router.get('/category-id', async (req, res) => {
 
 // GET project names by user_id (chain: user_id -> group_id -> client_id(s) -> project_name)
 router.get('/projects-by-user', async (req, res) => {
+  // Set explicit UTF-8 headers for Portuguese character support
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  
   const { user_id } = req.query;
   console.log('Fetching projects for user_id:', user_id); // Debug log
   
