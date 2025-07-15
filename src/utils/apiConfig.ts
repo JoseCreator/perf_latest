@@ -86,7 +86,9 @@ export const apiConfig = {
     // Test routes
     testEncoding: '/api/test/test',
     fixEncoding: '/api/test/fix-encoding',
-    checkCorruption: '/api/test/check-corruption'
+    checkCorruption: '/api/test/check-corruption',
+    diagnoseCorruption: '/api/diagnose/diagnose-corruption',
+    fixEncodingDetailed: '/api/diagnose/fix-encoding-detailed'
   }
 };
 

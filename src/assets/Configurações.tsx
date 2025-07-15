@@ -64,6 +64,10 @@ export default function CRUDAdmin() {
   const [encodingFixResult, setEncodingFixResult] = useState<string | null>(null);
   const [corruptionCheckLoading, setCorruptionCheckLoading] = useState(false);
   const [corruptionReport, setCorruptionReport] = useState<any>(null);
+  const [diagnosticLoading, setDiagnosticLoading] = useState(false);
+  const [diagnosticResult, setDiagnosticResult] = useState<any>(null);
+  const [detailedFixLoading, setDetailedFixLoading] = useState(false);
+  const [detailedFixResult, setDetailedFixResult] = useState<any>(null);
 
   // Define form fields for each entity type
   const getFormFields = (): FormField[] => {
@@ -389,6 +393,46 @@ export default function CRUDAdmin() {
     }
   };
 
+  const handleDiagnoseCorruption = async () => {
+    setDiagnosticLoading(true);
+    setDiagnosticResult(null);
+    
+    try {
+      const response = await axios.get(createApiUrl(apiConfig.endpoints.diagnoseCorruption));
+      if (response.data.success) {
+        setDiagnosticResult(response.data);
+      } else {
+        setDiagnosticResult({ error: response.data.message });
+      }
+    } catch (error) {
+      console.error('Diagnostic error:', error);
+      setDiagnosticResult({ error: 'Erro ao diagnosticar corrupção de dados.' });
+    } finally {
+      setDiagnosticLoading(false);
+    }
+  };
+
+  const handleDetailedFix = async () => {
+    setDetailedFixLoading(true);
+    setDetailedFixResult(null);
+    
+    try {
+      const response = await axios.post(createApiUrl(apiConfig.endpoints.fixEncodingDetailed));
+      if (response.data.success) {
+        setDetailedFixResult(response.data);
+        // Refresh data to show fixed characters
+        fetchData();
+      } else {
+        setDetailedFixResult({ error: response.data.message });
+      }
+    } catch (error) {
+      console.error('Detailed fix error:', error);
+      setDetailedFixResult({ error: 'Erro ao corrigir codificação com detalhes.' });
+    } finally {
+      setDetailedFixLoading(false);
+    }
+  };
+
   const entityData = getFilteredEntityData();
 
   return (
@@ -438,6 +482,28 @@ export default function CRUDAdmin() {
             >
               {encodingFixLoading ? 'A Corrigir...' : 'Corrigir Codificação'}
             </button>
+            <button
+              onClick={handleDiagnoseCorruption}
+              disabled={diagnosticLoading}
+              className={`px-4 py-2 rounded font-medium transition-colors ${
+                diagnosticLoading 
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                  : 'bg-purple-500 hover:bg-purple-600 text-white'
+              }`}
+            >
+              {diagnosticLoading ? 'A Diagnosticar...' : 'Diagnóstico Avançado'}
+            </button>
+            <button
+              onClick={handleDetailedFix}
+              disabled={detailedFixLoading}
+              className={`px-4 py-2 rounded font-medium transition-colors ${
+                detailedFixLoading 
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                  : 'bg-red-500 hover:bg-red-600 text-white'
+              }`}
+            >
+              {detailedFixLoading ? 'A Corrigir...' : 'Correção Avançada'}
+            </button>
           </div>
         </div>
         
@@ -475,6 +541,80 @@ export default function CRUDAdmin() {
         {encodingFixResult && (
           <div className="mt-3 p-2 bg-white rounded border">
             <p className="text-sm">{encodingFixResult}</p>
+          </div>
+        )}
+
+        {/* Diagnostic Result */}
+        {diagnosticResult && (
+          <div className="mt-3 p-3 bg-white rounded border">
+            <h4 className="font-semibold mb-2">Diagnóstico Avançado:</h4>
+            {diagnosticResult.error ? (
+              <p className="text-red-600">❌ {diagnosticResult.error}</p>
+            ) : (
+              <div className="space-y-3">
+                <p className="text-sm">
+                  <strong>Tabelas com corrupção:</strong> {diagnosticResult.totalTables}
+                </p>
+                {Object.keys(diagnosticResult.corruptedSamples || {}).length > 0 && (
+                  <div className="max-h-64 overflow-y-auto">
+                    {Object.entries(diagnosticResult.corruptedSamples).map(([table, samples]: [string, any]) => (
+                      <div key={table} className="mb-3">
+                        <h5 className="font-medium text-sm mb-1">Tabela: {table}</h5>
+                        {samples.slice(0, 3).map((sample: any, index: number) => (
+                          <div key={index} className="text-xs bg-gray-50 p-2 rounded mb-1">
+                            <div><strong>Campo:</strong> {sample.field}</div>
+                            <div><strong>Valor:</strong> <span className="text-red-600">"{sample.value}"</span></div>
+                            <div><strong>Códigos:</strong> {sample.charCodes.map((c: any) => `${c.char}(${c.code})`).join(' ')}</div>
+                            <div className="text-xs text-gray-500">
+                              Não-ASCII: {sample.hasNonAscii ? 'Sim' : 'Não'} | 
+                              ??: {sample.hasQuestionMarks ? 'Sim' : 'Não'} | 
+                              Especiais: {sample.hasStrangeChars ? 'Sim' : 'Não'}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Detailed Fix Result */}
+        {detailedFixResult && (
+          <div className="mt-3 p-3 bg-white rounded border">
+            <h4 className="font-semibold mb-2">Resultado da Correção Avançada:</h4>
+            {detailedFixResult.error ? (
+              <p className="text-red-600">❌ {detailedFixResult.error}</p>
+            ) : (
+              <div className="space-y-2">
+                <p className="text-sm">
+                  <strong>Registros corrigidos:</strong> {detailedFixResult.totalRecordsFixed}
+                </p>
+                <p className="text-sm">
+                  <strong>Alterações totais:</strong> {detailedFixResult.totalChanges}
+                </p>
+                {detailedFixResult.changes?.length > 0 && (
+                  <div>
+                    <p className="text-sm font-medium mb-1">Exemplos de alterações:</p>
+                    <div className="max-h-32 overflow-y-auto">
+                      {detailedFixResult.changes.slice(0, 10).map((change: any, index: number) => (
+                        <div key={index} className="text-xs bg-gray-50 p-2 rounded mb-1">
+                          <div><strong>{change.table}</strong> (ID: {change.id}) - Campo: {change.field}</div>
+                          <div>
+                            <span className="text-red-600">Antes: "{change.before}"</span>
+                          </div>
+                          <div>
+                            <span className="text-green-600">Depois: "{change.after}"</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>
