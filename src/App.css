@@ -1,0 +1,16 @@
+/* General Navbar Styles */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+.custom-bg {
+  background: #FAFAFA;
+  
+}
+
+  .rbc-header {
+    @apply bg-gray-200 text-gray-800 py-2 h-14 text-base font-medium border-gray-200;
+  }
+
+ 

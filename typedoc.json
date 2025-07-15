@@ -1,0 +1,67 @@
+{
+  "entryPoints": ["./src/assets/RegistarHoras.tsx", "./src/utils/apiConfig.ts"],
+  "entryPointStrategy": "expand",
+  "out": "./docs",
+  "name": "Perf Duarte - Time Tracking Documentation",
+  "includeVersion": true,
+  "excludePrivate": false,
+  "excludeProtected": false,
+  "excludeExternals": true,
+  "readme": "./README.md",
+  "theme": "default",
+  "hideGenerator": false,
+  "disableSources": false,
+  "sourceLinkTemplate": "https://github.com/your-repo/blob/{gitRevision}/{path}#L{line}",
+  "navigationLinks": {
+    "GitHub": "https://github.com/your-repo"
+  },
+  "sidebarLinks": {
+    "Documentation": "https://your-docs-site.com",
+    "Support": "mailto:support@example.com"
+  },
+  "customCss": "./docs-theme.css",
+  "validation": {
+    "notExported": true,
+    "invalidLink": true,
+    "notDocumented": false
+  },
+  "categorizeByGroup": true,
+  "defaultCategory": "Other",
+  "categoryOrder": [
+    "Components",
+    "Types",
+    "Utilities",
+    "*",
+    "Other"
+  ],
+  "sort": ["source-order", "alphabetical"],
+  "kindSortOrder": [
+    "Document",
+    "Project",
+    "Module",
+    "Namespace",
+    "Enum",
+    "EnumMember",
+    "Class",
+    "Interface",
+    "TypeAlias",
+    "Constructor",
+    "Property",
+    "Variable",
+    "Function",
+    "Accessor",
+    "Method",
+    "Parameter",
+    "TypeParameter",
+    "TypeLiteral",
+    "CallSignature",
+    "ConstructorSignature",
+    "IndexSignature",
+    "GetSignature",
+    "SetSignature"
+  ],
+  "searchInComments": true,
+  "cleanOutputDir": true,
+  "titleLink": "./",
+  "navigationLeaves": ["namespaces", "functions", "classes", "interfaces", "enums", "variables"]
+}

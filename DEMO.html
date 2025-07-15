@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Integration Demo</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .demo-section {
+            background: #f8f9fa;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border-left: 4px solid #0066cc;
+        }
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-family: 'Monaco', 'Menlo', monospace;
+        }
+        .step {
+            margin: 15px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .feature {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+        }
+        .feature-icon {
+            width: 20px;
+            height: 20px;
+            background: #28a745;
+            border-radius: 50%;
+            margin-right: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚀 GitHub Integration Demo</h1>
+    
+    <div class="demo-section">
+        <h2>📋 What You'll Experience</h2>
+        <p>This comprehensive GitHub integration allows you to connect to any GitHub repository and analyze commits with AI-powered insights.</p>
+        
+        <div class="feature">
+            <div class="feature-icon">✓</div>
+            <span>Search and explore GitHub repositories</span>
+        </div>
+        <div class="feature">
+            <div class="feature-icon">✓</div>
+            <span>View detailed commit history and changes</span>
+        </div>
+        <div class="feature">
+            <div class="feature-icon">✓</div>
+            <span>Analyze code differences with syntax highlighting</span>
+        </div>
+        <div class="feature">
+            <div class="feature-icon">✓</div>
+            <span>Generate AI summaries of commits</span>
+        </div>
+        <div class="feature">
+            <div class="feature-icon">✓</div>
+            <span>Navigate between branches and track changes</span>
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>🔧 Setup Instructions</h2>
+        
+        <div class="step">
+            <h3>Step 1: Start the Servers</h3>
+            <div class="code-block">
+# Backend (Terminal 1)
+cd backend
+npm start
+# Server running on http://localhost:4000
+
+# Frontend (Terminal 2)  
+cd frontend
+npm run dev
+# Server running on http://localhost:5174
+            </div>
+        </div>
+
+        <div class="step">
+            <h3>Step 2: Access the Application</h3>
+            <p>Navigate to: <strong>http://localhost:5174</strong></p>
+            <p>Then go to: <strong>/main/gitHub/githubprojetos</strong></p>
+        </div>
+
+        <div class="step">
+            <h3>Step 3: Configure GitHub Access</h3>
+            <p>You'll need a GitHub Personal Access Token:</p>
+            <ol>
+                <li>Go to GitHub → Settings → Developer Settings → Personal Access Tokens</li>
+                <li>Generate a new token with 'repo' and 'public_repo' permissions</li>
+                <li>Copy the token and paste it in the application</li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>🎯 Demo Scenarios</h2>
+        
+        <div class="step">
+            <h3>Scenario 1: Explore a Popular Repository</h3>
+            <ol>
+                <li>Search for "facebook/react" or "microsoft/vscode"</li>
+                <li>Click on the repository to load it</li>
+                <li>Browse through recent commits</li>
+                <li>Select a commit to see file changes</li>
+                <li>Generate an AI summary of the changes</li>
+            </ol>
+        </div>
+
+        <div class="step">
+            <h3>Scenario 2: Analyze Your Own Project</h3>
+            <ol>
+                <li>Search for your GitHub username or organization</li>
+                <li>Select one of your repositories</li>
+                <li>Switch between different branches</li>
+                <li>Compare commits to understand project evolution</li>
+                <li>Use AI summaries to document changes</li>
+            </ol>
+        </div>
+
+        <div class="step">
+            <h3>Scenario 3: Code Review Workflow</h3>
+            <ol>
+                <li>Select a repository with recent activity</li>
+                <li>Review the latest commits</li>
+                <li>Use the diff viewer to understand changes</li>
+                <li>Generate AI summaries for documentation</li>
+                <li>Track file modifications across commits</li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>🎨 Key Features to Showcase</h2>
+        
+        <div class="step">
+            <h3>Interactive Commit Browser</h3>
+            <p>Click through commits to see a timeline of changes with author information, timestamps, and commit messages.</p>
+        </div>
+
+        <div class="step">
+            <h3>Syntax-Highlighted Diff Viewer</h3>
+            <p>View code changes with proper syntax highlighting for different programming languages, with clear additions and deletions.</p>
+        </div>
+
+        <div class="step">
+            <h3>AI-Powered Commit Analysis</h3>
+            <p>Generate intelligent summaries that categorize changes as bug fixes, features, or refactoring with risk assessments.</p>
+        </div>
+
+        <div class="step">
+            <h3>Branch Navigation</h3>
+            <p>Switch between branches to compare development across different feature sets and release versions.</p>
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>💡 Technical Highlights</h2>
+        
+        <div class="step">
+            <h3>Backend Architecture</h3>
+            <p>Node.js with Express server providing RESTful GitHub API endpoints with proper error handling and rate limiting consideration.</p>
+        </div>
+
+        <div class="step">
+            <h3>Frontend Technology</h3>
+            <p>React with TypeScript, Tailwind CSS for styling, and react-syntax-highlighter for code presentation.</p>
+        </div>
+
+        <div class="step">
+            <h3>Security Implementation</h3>
+            <p>Secure token handling, CORS configuration, and input validation across all endpoints.</p>
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>🚀 Ready to Demo!</h2>
+        <p>Your GitHub integration is now ready to demonstrate. The application showcases modern web development practices with a focus on user experience and practical functionality.</p>
+        
+        <p><strong>Demo URL:</strong> <a href="http://localhost:5174/main/gitHub/githubprojetos">http://localhost:5174/main/gitHub/githubprojetos</a></p>
+    </div>
+
+    <script>
+        // Simple demo script to show interactivity
+        console.log('🎉 GitHub Integration Demo Ready!');
+        console.log('📍 Navigate to: http://localhost:5174/main/gitHub/githubprojetos');
+        console.log('🔑 Remember to have your GitHub Personal Access Token ready!');
+    </script>
+</body>
+</html>

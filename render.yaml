@@ -1,0 +1,32 @@
+services:  # Backend API Service
+  - type: web
+    name: pbe-duarte
+    env: node
+    plan: free
+    buildCommand: cd backend && npm install && chmod +x deploy-db.sh && ./deploy-db.sh
+    startCommand: cd backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: FRONTEND_URL
+        fromService:
+          type: web
+          name: pfe-duarte
+          property: host
+
+  # Frontend Static Site
+  - type: web
+    name: pfe-duarte
+    env: static
+    plan: free
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://pbe-duarte.onrender.com
+    headers:
+      - path: /*
+        name: X-Robots-Tag
+        value: noindex
