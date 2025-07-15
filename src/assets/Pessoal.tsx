@@ -165,6 +165,7 @@ const extrasPercent = (horasNormais > 0) ? Math.round((horasExtra / horasNormais
               options={projectOptions}
               value={selectedProject}
               onChange={(_, v) => setSelectedProject(v)}
+              getOptionLabel={(option) => option?.label || ''}
               sx={{ width: { xs: 180, sm: 200, md: 220 } }}
             />
           </div>
