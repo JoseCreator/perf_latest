@@ -38,14 +38,15 @@ async function addGithubAccountColumn() {
 }
 
 // Run the migration if this file is executed directly
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && process.argv[1].endsWith('add-github-account-column.js')) {
+  console.log('🚀 Running migration directly...');
   addGithubAccountColumn()
     .then(() => {
-      console.log('Migration completed successfully');
+      console.log('✅ Migration completed successfully');
       process.exit(0);
     })
     .catch((error) => {
-      console.error('Migration failed:', error);
+      console.error('❌ Migration failed:', error);
       process.exit(1);
     });
 }

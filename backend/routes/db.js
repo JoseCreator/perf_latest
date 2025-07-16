@@ -233,6 +233,9 @@ export async function initDb() {
   console.log('Database initialized successfully');
   console.log('Database file exists:', fs.existsSync(dbPath));
   
+  // Run migrations for GitHub functionality
+  await runMigrations();
+  
   await db.close();
 }
 
@@ -265,5 +268,23 @@ async function setupProductionPasswords(db) {
     
   } catch (error) {
     console.error('❌ Error setting up passwords:', error);
+  }
+}
+
+async function runMigrations() {
+  console.log('🔄 Running database migrations...');
+  
+  try {
+    // Import and run migrations
+    const { addGithubAccountColumn } = await import('../migrations/add-github-account-column.js');
+    const { addGithubProjectColumn } = await import('../migrations/add-github-project-column.js');
+    
+    await addGithubAccountColumn();
+    await addGithubProjectColumn();
+    
+    console.log('✅ All migrations completed successfully');
+  } catch (error) {
+    console.error('❌ Migration error:', error);
+    // Don't throw error to avoid breaking app startup
   }
 }
