@@ -10,6 +10,8 @@ services:  # Backend API Service
         value: production
       - key: JWT_SECRET
         generateValue: true
+      - key: GITHUB_TOKEN
+        sync: false
       - key: FRONTEND_URL
         fromService:
           type: web
