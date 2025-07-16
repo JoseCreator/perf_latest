@@ -23,6 +23,7 @@ import testEncodingRoutes from './routes/test-encoding.js';
 import diagnoseEncodingRoutes from './routes/diagnose-encoding.js';
 import frontendTestRoutes from './routes/frontend-test.js';
 import { initDb } from './routes/db.js';
+import { addGithubAccountColumn } from './migrations/add-github-account-column.js';
 
 
 const app = express();
@@ -147,6 +148,15 @@ async function startServer() {
     // Initialize database
     await initDb();
     console.log('✅ Database initialized successfully');
+    
+    // Run GitHub account column migration
+    try {
+      await addGithubAccountColumn();
+      console.log('✅ GitHub account migration completed');
+    } catch (migrationError) {
+      console.error('⚠️ GitHub account migration failed:', migrationError);
+      // Don't fail startup if migration fails
+    }
     
     // Force admin password reset if in production
     await forceAdminPasswordReset();

@@ -5,6 +5,38 @@ import axios from 'axios';
 
 const router = express.Router();
 
+// Debug endpoint to check GitHub API status
+router.get('/debug', async (req, res) => {
+  try {
+    const debugInfo = {
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV,
+      hasGithubToken: !!process.env.GITHUB_TOKEN,
+      tokenLength: process.env.GITHUB_TOKEN ? process.env.GITHUB_TOKEN.length : 0,
+      databasePath: process.env.NODE_ENV === 'production' ? '/tmp/timetracker.db' : 'local',
+      octokitInitialized: !!octokit
+    };
+    
+    // Test database connection
+    try {
+      const { getDb } = await import('./db.js');
+      const db = await getDb();
+      await db.get('SELECT COUNT(*) as count FROM utilizadores');
+      await db.close();
+      debugInfo.databaseConnected = true;
+    } catch (dbError) {
+      debugInfo.databaseConnected = false;
+      debugInfo.databaseError = dbError.message;
+    }
+    
+    console.log('🔍 GitHub Debug Info:', debugInfo);
+    res.json(debugInfo);
+  } catch (error) {
+    console.error('❌ GitHub debug endpoint error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Initialize GitHub client
 let octokit = null;
 
@@ -177,17 +209,38 @@ router.get('/branches/:owner/:repo', async (req, res) => {
 
 // Get user's GitHub account from the database
 router.get('/user-account', async (req, res) => {
+    let db;
     try {
+        console.log('🔍 GitHub user-account endpoint called with query:', req.query);
+        
         const { user_id } = req.query;
         
         // If no user_id provided, default to 67 for backwards compatibility
         const targetUserId = user_id || 67;
         
-        const db = await getDb();
+        console.log(`🔍 Looking for GitHub account for user_id: ${targetUserId}`);
+        
+        db = await getDb();
+        
+        // First, let's check if the table exists and has the column
+        try {
+            const tableInfo = await db.all("PRAGMA table_info(utilizadores)");
+            console.log('🔍 Table utilizadores columns:', tableInfo.map(col => col.name));
+            
+            const hasGithubColumn = tableInfo.some(column => column.name === 'github_account');
+            if (!hasGithubColumn) {
+                console.log('⚠️ github_account column does not exist, creating it...');
+                await db.exec('ALTER TABLE utilizadores ADD COLUMN github_account TEXT');
+                console.log('✅ Added github_account column');
+            }
+        } catch (columnError) {
+            console.error('❌ Error checking/creating github_account column:', columnError);
+        }
+        
         const user = await db.get('SELECT github_account FROM utilizadores WHERE user_id = ?', [targetUserId]);
         
         // Log the retrieved user and account for debugging
-        console.log(`Database query result for user_id ${targetUserId}:`, user);
+        console.log(`🔍 Database query result for user_id ${targetUserId}:`, user);
 
         if (user && user.github_account) {
             let githubAccount = user.github_account;
@@ -195,15 +248,31 @@ router.get('/user-account', async (req, res) => {
             if (githubAccount.endsWith('/')) {
                 githubAccount = githubAccount.slice(0, -1);
             }
-            console.log('Found and formatted GitHub account:', githubAccount);
+            console.log('✅ Found and formatted GitHub account:', githubAccount);
             res.json({ github_account: githubAccount });
         } else {
-            console.log(`GitHub account not found for user_id ${targetUserId}.`);
+            console.log(`⚠️ GitHub account not found for user_id ${targetUserId}.`);
             res.status(404).json({ error: `GitHub account not found for user_id ${targetUserId}.` });
         }
     } catch (error) {
-        console.error('Failed to fetch GitHub account:', error);
-        res.status(500).json({ error: 'Failed to fetch GitHub account from database.' });
+        console.error('❌ Failed to fetch GitHub account:', error);
+        console.error('❌ Error details:', {
+            message: error.message,
+            stack: error.stack,
+            code: error.code
+        });
+        res.status(500).json({ 
+            error: 'Failed to fetch GitHub account from database.',
+            details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
+    } finally {
+        if (db) {
+            try {
+                await db.close();
+            } catch (closeError) {
+                console.error('❌ Error closing database:', closeError);
+            }
+        }
     }
 });
 
