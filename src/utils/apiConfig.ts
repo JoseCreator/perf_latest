@@ -3,7 +3,7 @@ import axios from 'axios';
 // Set default axios configuration for UTF-8 support
 axios.defaults.headers.common['Accept'] = 'application/json; charset=utf-8';
 axios.defaults.headers.common['Content-Type'] = 'application/json; charset=utf-8';
-axios.defaults.headers.common['Accept-Charset'] = 'utf-8';
+// Note: Accept-Charset is an unsafe header that browsers don't allow JavaScript to set
 
 // Production backend URL - hardcoded to ensure it works
 // Force correct URL and prevent underscore variations

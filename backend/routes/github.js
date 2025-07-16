@@ -178,11 +178,16 @@ router.get('/branches/:owner/:repo', async (req, res) => {
 // Get user's GitHub account from the database
 router.get('/user-account', async (req, res) => {
     try {
+        const { user_id } = req.query;
+        
+        // If no user_id provided, default to 67 for backwards compatibility
+        const targetUserId = user_id || 67;
+        
         const db = await getDb();
-        const user = await db.get('SELECT github_account FROM utilizadores WHERE user_id = ?', [67]);
+        const user = await db.get('SELECT github_account FROM utilizadores WHERE user_id = ?', [targetUserId]);
         
         // Log the retrieved user and account for debugging
-        console.log('Database query result for user_id 67:', user);
+        console.log(`Database query result for user_id ${targetUserId}:`, user);
 
         if (user && user.github_account) {
             let githubAccount = user.github_account;
@@ -193,8 +198,8 @@ router.get('/user-account', async (req, res) => {
             console.log('Found and formatted GitHub account:', githubAccount);
             res.json({ github_account: githubAccount });
         } else {
-            console.log('GitHub account not found for user_id 67.');
-            res.status(404).json({ error: 'GitHub account not found for this user.' });
+            console.log(`GitHub account not found for user_id ${targetUserId}.`);
+            res.status(404).json({ error: `GitHub account not found for user_id ${targetUserId}.` });
         }
     } catch (error) {
         console.error('Failed to fetch GitHub account:', error);
